@@ -1,0 +1,8 @@
+{
+    "imports": {
+        "@routes/": "./routes/",
+        "@controllers/": "./controllers/",
+        "@models/": "./models/",
+        "@utils/": "./utils/"
+    }
+}
