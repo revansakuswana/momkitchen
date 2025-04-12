@@ -104,7 +104,7 @@ export default function AddFood() {
           justifyContent: "space-between",
         }}>
         <Box>
-          <Typography variant="h4" sx={{ fontWeight: "bold" }}>
+          <Typography variant="h4" sx={{ fontWeight: "bold", mb: 4 }}>
             Add New Food
           </Typography>
           <Box>

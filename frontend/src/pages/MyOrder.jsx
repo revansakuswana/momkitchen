@@ -14,6 +14,7 @@ import {
   Paper,
   styled,
   tableCellClasses,
+  Button,
 } from "@mui/material";
 
 const StyledTableCell = styled(TableCell)(({ theme }) => ({
@@ -30,7 +31,6 @@ const StyledTableRow = styled(TableRow)(({ theme }) => ({
   "&:nth-of-type(odd)": {
     backgroundColor: theme.palette.action.hover,
   },
-  // hide last border
   "&:last-child td, &:last-child th": {
     border: 0,
   },
@@ -39,21 +39,33 @@ const StyledTableRow = styled(TableRow)(({ theme }) => ({
 export default function MyOrder() {
   const [orders, setOrders] = useState([]);
 
-  useEffect(() => {
-    const fetchOrders = async () => {
-      try {
-        const response = await axios.get(
-          `${import.meta.env.VITE_BASE_URL}/api/my-order`,
-          { withCredentials: true }
-        );
-        setOrders(response.data.orders);
-      } catch (error) {
-        console.error(error);
-      }
-    };
+  const fetchOrders = async () => {
+    try {
+      const response = await axios.get(
+        `${import.meta.env.VITE_BASE_URL}/api/my-order`,
+        { withCredentials: true }
+      );
+      setOrders(response.data.orders);
+    } catch (error) {
+      console.error(error);
+    }
+  };
 
+  useEffect(() => {
     fetchOrders();
   }, []);
+
+  const handleDeleteItem = async (itemId) => {
+    try {
+      await axios.delete(
+        `${import.meta.env.VITE_BASE_URL}/api/order-item/${itemId}`,
+        { withCredentials: true }
+      );
+      fetchOrders(); // Refresh list
+    } catch (error) {
+      console.error("Error deleting order item:", error);
+    }
+  };
 
   const getTotalPrice = (orders) =>
     orders.reduce(
@@ -93,18 +105,11 @@ export default function MyOrder() {
             <Table>
               <TableHead>
                 <StyledTableRow>
-                  <StyledTableCell>
-                    <b>Menu</b>
-                  </StyledTableCell>
-                  <StyledTableCell align="right">
-                    <b>Quantity</b>
-                  </StyledTableCell>
-                  <StyledTableCell align="right">
-                    <b>Price</b>
-                  </StyledTableCell>
-                  <StyledTableCell align="right">
-                    <b>Total</b>
-                  </StyledTableCell>
+                  <StyledTableCell><b>Menu</b></StyledTableCell>
+                  <StyledTableCell align="right"><b>Quantity</b></StyledTableCell>
+                  <StyledTableCell align="right"><b>Price</b></StyledTableCell>
+                  <StyledTableCell align="right"><b>Total</b></StyledTableCell>
+                  <StyledTableCell align="center"><b>Action</b></StyledTableCell>
                 </StyledTableRow>
               </TableHead>
               <TableBody>
@@ -120,15 +125,22 @@ export default function MyOrder() {
                           Rp {item.food.price.toLocaleString()}
                         </StyledTableCell>
                         <StyledTableCell align="right">
-                          Rp{" "}
-                          {(item.quantity * item.food.price).toLocaleString()}
+                          Rp {(item.quantity * item.food.price).toLocaleString()}
+                        </StyledTableCell>
+                        <StyledTableCell align="center">
+                          <Button
+                            variant="contained"
+                            color="error"
+                            onClick={() => handleDeleteItem(item.id)}>
+                            Delete
+                          </Button>
                         </StyledTableCell>
                       </StyledTableRow>
                     ))
                   )
                 ) : (
                   <StyledTableRow>
-                    <TableCell colSpan={4} align="center">
+                    <TableCell colSpan={5} align="center">
                       No orders found
                     </TableCell>
                   </StyledTableRow>
@@ -140,6 +152,7 @@ export default function MyOrder() {
                   <TableCell align="right">
                     <b>Rp {getTotalPrice(orders).toLocaleString()}</b>
                   </TableCell>
+                  <TableCell />
                 </StyledTableRow>
               </TableBody>
             </Table>

@@ -8,12 +8,14 @@ import {
   Button,
   Snackbar,
   Alert,
+  TextField,
 } from "@mui/material";
 import { ShoppingCartIcon } from "@heroicons/react/24/outline";
 import axios from "axios";
 
 export default function FoodCard() {
   const [foods, setFoods] = useState([]);
+  const [quantities, setQuantities] = useState({});
 
   const [alertOpen, setAlertOpen] = useState(false);
   const [alertMessage, setAlertMessage] = useState("");
@@ -30,6 +32,13 @@ export default function FoodCard() {
           `${import.meta.env.VITE_BASE_URL}/api/menu`
         );
         setFoods(response.data.data);
+
+        // Inisialisasi quantity default ke 1 untuk setiap makanan
+        const initialQuantities = {};
+        response.data.data.forEach((food) => {
+          initialQuantities[food.id] = 1;
+        });
+        setQuantities(initialQuantities);
       } catch (error) {
         console.error("Error fetching food data:", error);
       }
@@ -38,10 +47,17 @@ export default function FoodCard() {
     fetchFoods();
   }, []);
 
+  const handleQuantityChange = (foodId, value) => {
+    const newQuantities = { ...quantities };
+    const intValue = parseInt(value);
+    newQuantities[foodId] = isNaN(intValue) || intValue < 1 ? 1 : intValue;
+    setQuantities(newQuantities);
+  };
+
   const handleOrder = async (foodId) => {
     try {
       const orderData = {
-        items: [{ foodId, quantity: 1 }],
+        items: [{ foodId, quantity: quantities[foodId] || 1 }],
       };
 
       const response = await axios.post(
@@ -58,7 +74,7 @@ export default function FoodCard() {
       }
     } catch (error) {
       setAlertSeverity("error");
-      setAlertMessage(error.response?.data?.message);
+      setAlertMessage(error.response?.data?.message || "Order failed");
       setAlertOpen(true);
     }
   };
@@ -99,15 +115,29 @@ export default function FoodCard() {
                   Rp. {new Intl.NumberFormat("id-ID").format(food.price)}
                 </Typography>
               </Box>
-              <Box mt={1}>
-                <Button
+
+              {/* Input quantity */}
+              <Box mt={1} mb={1}>
+                <TextField
+                  type="number"
+                  size="small"
+                  label="Qty"
+                  value={quantities[food.id] || 1}
+                  onChange={(e) =>
+                    handleQuantityChange(food.id, e.target.value)
+                  }
+                  inputProps={{ min: 1 }}
                   fullWidth
-                  variant="contained"
-                  startIcon={<ShoppingCartIcon width={18} />}
-                  onClick={() => handleOrder(food.id)}>
-                  Order
-                </Button>
+                />
               </Box>
+
+              <Button
+                fullWidth
+                variant="contained"
+                startIcon={<ShoppingCartIcon width={18} />}
+                onClick={() => handleOrder(food.id)}>
+                Order
+              </Button>
             </CardContent>
           </Card>
         ))

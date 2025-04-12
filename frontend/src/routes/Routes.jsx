@@ -6,6 +6,7 @@ import Menu from "@pages/Menu.jsx";
 import AddFood from "@pages/AddFood.jsx";
 import MyOrder from "@pages/MyOrder.jsx";
 import ListOrder from "@pages/ListOrder.jsx";
+import FoodList from "@pages/FoodList";
 
 const Routers = () => {
   return (
@@ -18,6 +19,7 @@ const Routers = () => {
       <Route path="/list-order" element={<ListOrder />} />
       <Route path="/my-order" element={<MyOrder />} />
       <Route path="/add-food" element={<AddFood />} />
+      <Route path="/list-food" element={<FoodList />} />
     </Routes>
   );
 };

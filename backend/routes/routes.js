@@ -10,7 +10,7 @@ import {
   getAllOrders,
   getOrderById,
   getUserOrders,
-  deleteOrder,
+  deleteOrderItem,
 } from "../controllers/order.js";
 import {
   Signup,
@@ -34,10 +34,10 @@ router.post("/add-order", verifyToken, createOrder); // User membuat pesanan
 router.get("/list-order", verifyToken, isAdmin, getAllOrders); // Admin melihat semua pesanan
 router.get("/my-order", verifyToken, getUserOrders); // User melihat pesanan mereka sendiri
 router.get("/detail-order/:id", verifyToken, getOrderById); // Admin atau pemilik pesanan melihat detail pesanan
-router.delete("/delete-order/:id", verifyToken, isAdmin, deleteOrder); // Admin menghapus pesanan
+router.delete("/order-item/:id", deleteOrderItem); // User menghapus item pesanan
 router.get("/menu", getAllFood); // Semua user bisa melihat daftar makanan
 router.post("/add-food", verifyToken, isAdmin, addFood); // Hanya admin bisa menambah makanan
-router.put("/updated-food/:id", verifyToken, isAdmin, updateFood); // Hanya admin bisa mengedit makanan
+router.put("/update-food/:id", verifyToken, isAdmin, updateFood); // Hanya admin bisa mengedit makanan
 router.delete("/delete-food/:id", verifyToken, isAdmin, deleteFood); // Hanya admin bisa menghapus makanan
 
 export default router;

@@ -147,7 +147,7 @@ export default function AvatarIcon() {
             <MenuItem
               onClick={handleClose}
               component="a"
-              href="add-food"
+              href="list-food"
               style={{ textDecoration: "none" }}>
               <ListItemIcon>
                 <UserGroupIcon className="h-5 w-5" />

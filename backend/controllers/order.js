@@ -126,8 +126,8 @@ export const getUserOrders = async (req, res) => {
 };
 
 // Menghapus pesanan (Admin)
-export const deleteOrder = async (req, res) => {
-  try {
+export const adminDeleteOrder = async (req, res) => {
+try {
     const { id } = req.params;
     const order = await order.findByPk(id);
 
@@ -142,5 +142,22 @@ export const deleteOrder = async (req, res) => {
       message: "Terjadi kesalahan saat menghapus pesanan.",
       error: error.message,
     });
+  }
+};
+
+// DELETE /api/order-item/:id
+export const deleteOrderItem = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const item = await orderItem.findByPk(id);
+
+    if (!item) {
+      return res.status(404).json({ message: "Item pesanan tidak ditemukan" });
+    }
+
+    await item.destroy();
+    res.json({ message: "Item pesanan berhasil dihapus" });
+  } catch (error) {
+    res.status(500).json({ message: "Terjadi kesalahan", error: error.message });
   }
 };

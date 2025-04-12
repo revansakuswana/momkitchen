@@ -1,12 +1,14 @@
 import { food } from "../models/index.js";
 import upload from "../middleware/multer.js";
+import fs from "fs";
+import path from "path";
 
 export const addFood = async (req, res) => {
   try {
     // Proses upload gambar
     await new Promise((resolve, reject) => {
       upload.single("image")(req, res, (err) => {
-        if (err) return reject(err);
+        if (err) return reject(err instanceof Error ? err : new Error(err));
         resolve();
       });
     });
@@ -31,7 +33,9 @@ export const addFood = async (req, res) => {
       data: newFood,
     });
   } catch (error) {
-    res.status(500).json({ message: "Terjadi kesalahan pada server" });
+    res
+      .status(500)
+      .json({ message: "Terjadi kesalahan pada server", error: error.message });
   }
 };
 
@@ -48,20 +52,49 @@ export const getAllFood = async (req, res) => {
 // Perbarui makanan (Hanya Admin)
 export const updateFood = async (req, res) => {
   try {
-    const { id } = req.params;
-    const { name, description, price, imageUrl } = req.body;
+    // Proses upload gambar
+    await new Promise((resolve, reject) => {
+      upload.single("image")(req, res, (err) => {
+        if (err) return reject(err instanceof Error ? err : new Error(err));
+        resolve();
+      });
+    });
 
-    const food = await food.findByPk(id);
-    if (!food) {
+    const { id } = req.params;
+    const { name, price } = req.body;
+    const image = req.file;
+
+    const existingFood = await food.findByPk(id);
+    if (!existingFood) {
       return res.status(404).json({ message: "Makanan tidak ditemukan" });
     }
 
-    await food.update({ name, description, price, imageUrl });
-    res
-      .status(200)
-      .json({ message: "Makanan berhasil diperbarui", data: food });
+    // Hapus gambar lama jika ada gambar baru
+    if (image && existingFood.imageUrl) {
+      const oldImagePath = path.join("public/images", existingFood.imageUrl);
+      if (fs.existsSync(oldImagePath)) {
+        fs.unlinkSync(oldImagePath);
+      }
+    }
+
+    // Update data
+    const updatedData = {
+      name: name || existingFood.name,
+      price: price || existingFood.price,
+      imageUrl: image ? image.filename : existingFood.imageUrl,
+    };
+
+    await existingFood.update(updatedData);
+
+    res.status(200).json({
+      message: "Makanan berhasil diperbarui",
+      data: existingFood,
+    });
   } catch (error) {
-    res.status(500).json({ message: "Terjadi kesalahan pada server" });
+    console.error("Update error:", error);
+    res
+      .status(500)
+      .json({ message: "Terjadi kesalahan pada server", error: error.message });
   }
 };
 
@@ -69,15 +102,25 @@ export const updateFood = async (req, res) => {
 export const deleteFood = async (req, res) => {
   try {
     const { id } = req.params;
-    const food = await food.findByPk(id);
+    const existingFood = await food.findByPk(id);
 
-    if (!food) {
+    if (!existingFood) {
       return res.status(404).json({ message: "Makanan tidak ditemukan" });
     }
 
-    await food.destroy();
+    // Hapus gambar dari file system jika ada
+    if (existingFood.imageUrl) {
+      const imagePath = path.join("public/images", existingFood.imageUrl);
+      if (fs.existsSync(imagePath)) {
+        fs.unlinkSync(imagePath);
+      }
+    }
+
+    await existingFood.destroy(); // ✅ Ini yang benar
     res.status(200).json({ message: "Makanan berhasil dihapus" });
   } catch (error) {
-    res.status(500).json({ message: "Terjadi kesalahan pada server" });
+    res
+      .status(500)
+      .json({ message: "Terjadi kesalahan pada server", error: error.message });
   }
 };

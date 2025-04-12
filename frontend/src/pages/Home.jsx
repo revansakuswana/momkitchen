@@ -126,13 +126,6 @@ export default function Home() {
                   <Typography variant="body1" color="primary">
                     Rp. {new Intl.NumberFormat("id-ID").format(food.price)}
                   </Typography>
-                  <Button
-                    variant="contained"
-                    fullWidth
-                    sx={{ mt: 2 }}
-                    startIcon={<ShoppingCartIcon />}>
-                    Beli Sekarang
-                  </Button>
                 </CardContent>
               </Card>
             </Grid2>
